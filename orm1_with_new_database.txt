@@ -1,0 +1,180 @@
+https://docs.microsoft.com/en-us/ef/core/get-started/full-dotnet/new-db
+
+
+
+Open Visual Studio 2017
+
+File > New > Project...
+
+From the left menu select Installed > Visual C# > Windows Desktop
+
+
+Make sure that the project targets .NET Framework 4.6.1 or later
+
+Name the project ORM_demo and click OK
+
+
+
+==========================================
+
+Install Entity Framework
+===========================================
+Tools > NuGet Package Manager > Package Manager Console
+
+Run following command in package manager console
+........................................................
+Install-Package Microsoft.EntityFrameworkCore.SqlServer
+.........................................................
+
+Later in this tutorial you use some Entity Framework Tools to maintain the
+ database. So install the tools package as well.
+
+
+.................................................
+Install-Package Microsoft.EntityFrameworkCore.Tools
+...................................................
+
+
+================================================
+
+create model
+
+=================================================
+
+Project > Add Class..
+
+Enter Model.cs as the name and click OK
+
+Replace the contents of the file with the following code
+
+............................................................
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+
+namespace ORM_demo
+{
+    public class BloggingContext : DbContext
+    {
+        public DbSet<Blog> Blogs { get; set; }
+        public DbSet<Post> Posts { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EFGetStarted.ConsoleApp.NewDb;Trusted_Connection=True;");
+        }
+    }
+
+    public class Blog
+    {
+        public int BlogId { get; set; }
+        public string Url { get; set; }
+
+        public List<Post> Posts { get; set; }
+    }
+
+    public class Post
+    {
+        public int PostId { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+
+        public int BlogId { get; set; }
+        public Blog Blog { get; set; }
+    }
+}
+
+
+............................................................
+
+
+
+
+================================================================
+Create the database
+
+================================================================
+Now that you have a model, you can use migrations to create a database.
+
+
+Tools > NuGet Package Manager > Package Manager Console
+
+Run Add-Migration InitialCreate to scaffold a migration to create the initial
+set of tables for the model.
+...............................
+
+Add-Migration InitialCreate
+...............................
+
+run following command
+................................
+Update-Database
+................................
+
+
+
+===================================================
+Use the model
+===================================================
+
+Open Program.cs
+
+Replace the contents of the file with the following code
+
+..................................................................
+
+using System;
+
+namespace ORM_demo
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var db = new BloggingContext())
+            {
+                db.Blogs.Add(new Blog { Url = "http://blogs.msdn.com/adonet" });
+                var count = db.SaveChanges();
+                Console.WriteLine("{0} records saved to database", count);
+
+                Console.WriteLine();
+                Console.WriteLine("All blogs in database:");
+                foreach (var blog in db.Blogs)
+                {
+                    Console.WriteLine(" - {0}", blog.Url);
+                }
+            }
+        }
+    }
+}
+..................................................................
+
+
+
+Debug > Start Without Debugging
+
+You see that one blog is saved to the database and then the 
+details of all blogs are printed to the console.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
